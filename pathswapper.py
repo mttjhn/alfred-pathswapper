@@ -27,6 +27,7 @@ def getNetworkFromMount(mountPath):
     return serverPath
 
 def getMountFromNetwork(networkPath):
+    log.debug(networkPath)
     df = subprocess.Popen(['df', '-T', 'smbfs'], stdout = subprocess.PIPE)
     for m in df.stdout.readlines():
         # Skip the header line when parsing STDOUT
@@ -38,6 +39,11 @@ def getMountFromNetwork(networkPath):
             log.debug(mountLoc)
             if serverPath.lower() == networkPath.lower():
                 return mountLoc
+            else:
+                networkSplit = networkPath.split('/')
+                if len(networkSplit) == 2:
+                    if networkSplit[0].lower() in serverPath.lower() and networkSplit[1].lower() in serverPath.lower():
+                        return mountLoc
 
 # This function converts Windows to SMB paths
 def convertToSmb(winPath):
@@ -57,8 +63,8 @@ def convertToVolume(winPath):
     mountPath = getMountFromNetwork(networkPath)
     #mountPath = u'/Volumes/' + share
 
-    # Check to see if the path is mounted
-    if os.path.exists(mountPath):
+    # Check to see if the path is not null AND is mounted
+    if mountPath and os.path.exists(mountPath):
         # Simplistic version here...
         output = winPath[2:].replace(server, 'Volumes')
         return u'/' + flipForward(output)
