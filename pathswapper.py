@@ -51,49 +51,66 @@ def convertToSmb(winPath):
     return u'smb:' + flipForward(winPath)
 
 # This function converts Windows to mounted Volumes
-def convertToVolume(winPath):
-    # Assumes that winPath is something like '\\server\share'
-    # Start by parsing out the server and share
-
-    splitPath = winPath[2:].split('\\')
-    server = splitPath[0]
-    share = splitPath[1]
-    networkPath = server + '/' + share
-    log.debug(networkPath)
-    mountPath = getMountFromNetwork(networkPath)
-    #mountPath = u'/Volumes/' + share
-
-    # Check to see if the path is not null AND is mounted
-    if mountPath and os.path.exists(mountPath):
-        # Simplistic version here...
-        output = winPath[2:].replace(server, 'Volumes')
-        return u'/' + flipForward(output)
+def convertToVolume(path, isSmb):
+    output = None
+    if isSmb:
+        # Assumes that path is a SMB path
+        splitPath = path[6:].split('/')
+        server = splitPath[0]
+        share = splitPath[1]
+        networkPath = server + '/' + share
+        log.debug(networkPath)
+        mountPath = getMountFromNetwork(networkPath)
+        # Check to see if the path is not null AND is mounted
+        if mountPath and os.path.exists(mountPath):
+            log.debug(mountPath)
+            # Simplistic version here...
+            output = flipForward(path[6:].replace(networkPath, mountPath))
     else:
-        return None
+        # Assumes that path is a Windows path, something like '\\server\share'
+        # Start by parsing out the server and share
+        splitPath = path[2:].split('\\')
+        server = splitPath[0]
+        share = splitPath[1]
+        networkPath = server + '/' + share
+        log.debug(networkPath)
+        mountPath = getMountFromNetwork(networkPath)
+        # Check to see if the path is not null AND is mounted
+        if mountPath and os.path.exists(mountPath):
+            log.debut(mountPath)
+            # Simplistic version here...
+            output = flipForward(path[2:].replace(networkPath, mountPath))
+
+    return output
 
 # This function converts from Mac to Windows Links
-def convertToWindows(macPath):
-    # Assumes we're starting with a classic /Volumes/ link
-    splitPath = macPath[1:].split('/')
-    share = splitPath[1].strip()
-    mountLoc = '/' + splitPath[0] + '/' + share
-    log.debug(share)
-    log.debug(mountLoc)
-    replace = None
+def convertToWindows(macPath, isSmb):
     output = None
-    networkMnt = getNetworkFromMount(mountLoc + '/')
-    replace = networkMnt
-    # Let's see if we got anything
-    #if networkMnt:
-    #    replace = networkMnt
-    #else:
-    #    for s in mountMap:
-    #        if s[0].lower() == share.lower():
-    #            log.debug('Found loc!')
-    #            replace = s[1]
-    #            log.debug(replace)
-    if replace != None:
-        output = flipBack(u'\\\\' + macPath.replace(mountLoc, replace)) 
+
+    if isSmb:
+        # Assumes we have a fully-qualified SMB link
+        output = flipBack(macPath.replace('smb://', '//'))
+    else:
+        # Assumes we're starting with a classic /Volumes/ link
+        splitPath = macPath[1:].split('/')
+        share = splitPath[1].strip()
+        mountLoc = '/' + splitPath[0] + '/' + share
+        log.debug(share)
+        log.debug(mountLoc)
+        replace = None
+        networkMnt = getNetworkFromMount(mountLoc + '/')
+        replace = networkMnt
+        # Let's see if we got anything
+        #if networkMnt:
+        #    replace = networkMnt
+        #else:
+        #    for s in mountMap:
+        #        if s[0].lower() == share.lower():
+        #            log.debug('Found loc!')
+        #            replace = s[1]
+        #            log.debug(replace)
+        if replace != None:
+            output = flipBack(u'\\\\' + macPath.replace(mountLoc, replace)) 
     return output
 
 # This function flips slashes to forward-slashes
@@ -135,7 +152,7 @@ def main(wf):
             # We likely have a windows path!
             # TODO: Add modifiers for copying instead of opening, etc.
             smbPath = convertToSmb(query)
-            volPath = convertToVolume(query)
+            volPath = convertToVolume(query, False)
             # Option to copy SMB Path
             smb = wf.add_item(title=u'Copy SMB Path...',
                 subtitle=smbPath,
@@ -164,10 +181,27 @@ def main(wf):
             log.debug('Windows Path found! Path: ' + query)
         elif query != None and query[:6] == 'smb://':
             # We likely have a smb:// path
-            wf.add_item(title=u'SMB Path!',
-                subtitle='Need to look up more info...',
-                icon=ICON_NETWORK,
-                valid=True)
+            volPath = convertToVolume(query, True)
+            if volPath != None:
+                # Option to open path in Finder
+                vol = wf.add_item(title=u'Open in Finder...',
+                        subtitle=volPath,
+                        arg=volPath,
+                        icon=ICON_NETWORK,
+                        type=u'file',
+                        valid=True)
+                vol.setvar(u'open', '1')
+            # Check for windows path to copy
+            winPath = convertToWindows(query, True)
+            if winPath != None:
+                optionsShown = True
+                # Option to copy path to clipboard
+                win = wf.add_item(title=u'Copy UNC/Windows Path...',
+                    subtitle=winPath,
+                    arg=winPath,
+                    icon=ICON_NETWORK,
+                    valid=True)
+                win.setvar(u'copy', '1')
             log.debug('SMB Path found! Path: ' + query)
         elif query[:7] == 'file://':
             # We have some form of File path. Let's see what we can do...
@@ -178,9 +212,8 @@ def main(wf):
         elif query != None and query[:1] == '/':
             # We likely have a Mac Path
             # Check for mounted volumes here
-            winPathFound = False
             if query[:9] == '/Volumes/':
-                winPath = convertToWindows(query)
+                winPath = convertToWindows(query, False)
                 if winPath != None:
                     optionsShown = True
                     # Option to copy path to clipboard
@@ -203,14 +236,4 @@ def main(wf):
 if __name__ == u"__main__":
     wf = Workflow3()
     log = wf.logger
-    # Set the collection of network locations
-    #mountMap = wf.stored_data('mountMap')
-    #if mountMap == None:
-    #    mountMap = [
-    #        ['projects', 'denfiles.computronix.com\\projects'],
-    #        ['applications', 'denfiles.computronix.com\\applications'],
-    #        ['public', 'denfiles.computronix.com\\public'],
-    #        ['posse', 'genesis.computronix.com\\posse']
-    #    ]
-    #    wf.store_data('mountMap', mountMap)
     sys.exit(wf.run(main)) 
