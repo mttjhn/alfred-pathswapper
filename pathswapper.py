@@ -77,9 +77,10 @@ def convertToVolume(path, isSmb):
         mountPath = getMountFromNetwork(networkPath)
         # Check to see if the path is not null AND is mounted
         if mountPath and os.path.exists(mountPath):
-            log.debut(mountPath)
+            log.debug(mountPath)
             # Simplistic version here...
-            output = flipForward(path[2:].replace(networkPath, mountPath))
+            output = flipForward(path[2:]).replace(networkPath, mountPath)
+            log.debug(output);
 
     return output
 
