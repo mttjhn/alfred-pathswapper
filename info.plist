@@ -121,6 +121,8 @@
 				<false/>
 				<key>clipboardtext</key>
 				<string>{query}</string>
+				<key>ignoredynamicplaceholders</key>
+				<false/>
 				<key>transient</key>
 				<false/>
 			</dict>
@@ -129,13 +131,19 @@
 			<key>uid</key>
 			<string>835ED2F7-C878-4B14-8D0C-FA66D22EABB5</string>
 			<key>version</key>
-			<integer>2</integer>
+			<integer>3</integer>
 		</dict>
 		<dict>
 			<key>config</key>
 			<dict>
 				<key>alfredfiltersresults</key>
 				<false/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>0</integer>
+				<key>argumenttreatemptyqueryasnil</key>
+				<false/>
+				<key>argumenttrimmode</key>
+				<integer>0</integer>
 				<key>argumenttype</key>
 				<integer>2</integer>
 				<key>escaping</key>
@@ -153,7 +161,7 @@
 				<key>runningsubtext</key>
 				<string>Please wait...</string>
 				<key>script</key>
-				<string>python pathswapper.py</string>
+				<string>python3 pathswapper.py</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -163,7 +171,7 @@
 				<key>title</key>
 				<string>Path Swapper</string>
 				<key>type</key>
-				<integer>0</integer>
+				<integer>5</integer>
 				<key>withspace</key>
 				<false/>
 			</dict>
@@ -172,7 +180,7 @@
 			<key>uid</key>
 			<string>4923FF72-E480-43E0-8700-62AAF8BEB799</string>
 			<key>version</key>
-			<integer>2</integer>
+			<integer>3</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -234,6 +242,8 @@
 				<true/>
 				<key>clipboardtext</key>
 				<string>{query}</string>
+				<key>ignoredynamicplaceholders</key>
+				<false/>
 				<key>transient</key>
 				<false/>
 			</dict>
@@ -242,7 +252,7 @@
 			<key>uid</key>
 			<string>F8F35FC9-0B67-4FB7-AB38-C7DE989F8935</string>
 			<key>version</key>
-			<integer>2</integer>
+			<integer>3</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -266,19 +276,6 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>path</key>
-				<string>{query}</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.action.browseinalfred</string>
-			<key>uid</key>
-			<string>DEAE041B-F7EE-4A24-B4DB-2CC93F49517F</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>inputstring</key>
 				<string>{var:browse}</string>
 				<key>matchcasesensitive</key>
@@ -292,6 +289,29 @@
 			<string>alfred.workflow.utility.filter</string>
 			<key>uid</key>
 			<string>36062059-20AF-4A32-BC9E-B0D9829450D2</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>path</key>
+				<string>{query}</string>
+				<key>sortBy</key>
+				<integer>0</integer>
+				<key>sortDirection</key>
+				<integer>0</integer>
+				<key>sortFoldersAtTop</key>
+				<false/>
+				<key>sortOverride</key>
+				<false/>
+				<key>stackBrowserView</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.browseinalfred</string>
+			<key>uid</key>
+			<string>DEAE041B-F7EE-4A24-B4DB-2CC93F49517F</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -370,7 +390,7 @@
 			<key>xpos</key>
 			<integer>420</integer>
 			<key>ypos</key>
-			<integer>320</integer>
+			<integer>375</integer>
 		</dict>
 		<key>F8F35FC9-0B67-4FB7-AB38-C7DE989F8935</key>
 		<dict>
@@ -384,7 +404,11 @@
 			<integer>240</integer>
 		</dict>
 	</dict>
+	<key>variablesdontexport</key>
+	<array/>
+	<key>version</key>
+	<string>1.3</string>
 	<key>webaddress</key>
-	<string>www.mttjhn.com</string>
+	<string>mttjhn.com</string>
 </dict>
 </plist>
